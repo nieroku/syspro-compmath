@@ -7,6 +7,7 @@ template <std::floating_point T> void run() {
   std::cout << "Working with " << typeid(T).name() << '\n';
   for (int i = 0; i < 80; i++)
     std::cout << '=';
+  std::cout << '\n';
   std::cout << std::hexfloat;
 
   T one = 1;

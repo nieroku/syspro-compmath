@@ -32,9 +32,9 @@ def main():
                 roots.append(root)
             basins[-1].append(SYMBOLS[i])
 
-    for row in basins:
-        print("".join(row))
+    print(*("".join(row) for row in basins), sep='\n', end="")
 
 
 if __name__ == "__main__":
     main()
+    input()

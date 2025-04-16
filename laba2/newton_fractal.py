@@ -1,12 +1,14 @@
 import os
 
-PRECISION = 0.00001
-SYMBOLS = "0#*"
+PRECISION = float(os.getenv("PRECISION", 0.00001))
+SYMBOLS = os.getenv("SYMBOLS", "0#*")
+STEP = float(os.getenv("STEP", 0.1))
+POWER = len(SYMBOLS)
 
 
 def find_root(z):
-    while abs(z ** 3 - 1) > PRECISION:
-        z -= ((z ** 3) - 1) / (3 * z * z)
+    while abs(z ** POWER - 1) > PRECISION:
+        z -= ((z ** POWER) - 1) / (POWER * (z ** (POWER - 1)))
     return z
 
 
@@ -15,14 +17,13 @@ def main():
 
     roots = []
     basins = []
-    for y in range(-half_height, half_height + 1):
-        if y == 0:
-            continue
+    for y in range(-half_height, half_height):
         basins.append([])
-        for x in range(-half_width, half_width + 1):
-            if x == 0:
+        for x in range(-half_width, half_width):
+            if x == 0 and y == 0:
+                basins[-1].append(' ')
                 continue
-            root = find_root(complex(x / 10, y / 10))
+            root = find_root(complex(x * STEP, y * STEP))
             i = 0
             while i < len(roots):
                 if abs(root - roots[i]) <= PRECISION:

@@ -17,7 +17,9 @@ double cot(double x) { return std::cos(x) / std::sin(x); }
 double f(double x) { return std::tan(x) - x; }
 double df(double x) { return std::tan(x) * std::tan(x); }
 
-double bisection_(double a, double b, double precision) {
+double bisection_(double a, double b, double precision, size_t &iterations) {
+  iterations++;
+
   double c = (a + b) / 2;
   if (std::abs(a - b) < 2 * precision)
     return c;
@@ -25,52 +27,64 @@ double bisection_(double a, double b, double precision) {
     a = c;
   else
     b = c;
-  __attribute__((musttail)) return bisection_(a, b, precision);
+  __attribute__((musttail)) return bisection_(a, b, precision, iterations);
 }
 
-double bisection(int k, double precision) {
-  return bisection_(pi * k - pi2, pi * k + pi2, precision);
+double bisection(int k, double precision, size_t &iterations) {
+  iterations = 0;
+  return bisection_(pi * k - pi2, pi * k + pi2, precision, iterations);
 }
 
-double fixed_point_iterations(int k, double precision) {
+double fixed_point_iterations(int k, double precision, size_t &iterations) {
   double x = k * pi;
   double x1;
-  while (std::fabs((x1 = std::atan(x) + k * pi) - x) >= precision)
+  while (std::fabs((x1 = std::atan(x) + k * pi) - x) >= precision) {
     x = x1;
+    iterations++;
+  }
   return x;
 }
 
-double newton_method(int k, double precision) {
+double newton_method(int k, double precision, size_t &iterations) {
+  iterations = 0;
+
   double x = k * pi + (k >= 0 ? 1 : -1) * (pi2 - precision);
   do {
     x -= f(x) / df(x);
+    iterations++;
   } while (std::abs(std::tan(x) - x) >= precision);
   return x;
 }
 
-double secant_method_step(double& x, double& x1) {
+double secant_method_step(double &x, double &x1) {
   double x2 = x1 - (f(x1) * (x1 - x) / (f(x1) - f(x)));
   x = x1;
   x1 = x2;
   return std::abs(x1 - x);
 }
 
-double secant_method(int k, double precision) {
+double secant_method(int k, double precision, size_t &iterations) {
+  iterations = 0;
+
   double x = k * pi + (k >= 0 ? 1 : -1) * (pi2 - precision);
   double x1 = x - (k >= 0 ? 1 : -1) * (precision);
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 5; i++) {
     secant_method_step(x, x1);
+    iterations++;
+  }
 
   double delta;
   do {
     delta = secant_method_step(x, x1);
+    iterations++;
   } while (delta > precision);
 
   double delta0;
   do {
     delta0 = delta;
     delta = secant_method_step(x, x1);
+    iterations++;
   } while (delta < delta0);
   return x;
 }
@@ -90,17 +104,19 @@ int main() {
   precision = line.empty() ? 0.00001 : std::stod(line);
   std::cout << '\n';
 
-  using Method = std::function<double(int, double)>;
-  auto methods = std::to_array<std::pair<const char*, Method>>({
+  using Method = std::function<double(int, double, size_t &)>;
+  auto methods = std::to_array<std::pair<const char *, Method>>({
       std::make_pair("bisection", bisection),
       std::make_pair("fixed-point iterations", fixed_point_iterations),
       std::make_pair("newton method", newton_method),
       std::make_pair("secant method", secant_method),
   });
 
+  size_t iterations;
   for (const auto [name, method] : methods) {
     std::cout << name << ":" << '\n';
-    std::cout << "x = " << method(k, precision) << '\n';
+    std::cout << "x = " << method(k, precision, iterations);
+    std::cout << " (" << iterations << " iterations)" << '\n';
     std::cout << '\n';
   }
 }

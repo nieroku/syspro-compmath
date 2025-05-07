@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 from common import *
 
-
-plt.plot(xs, f(xs))
+plt.plot(xs, f(xs), 'k')
 
 for n in range(3, 10 + 1):
     nodes = evenlySpaced(n)

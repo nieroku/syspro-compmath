@@ -17,7 +17,7 @@ def thomas_algorithm(a, b, c, d):
     for i in range(n-2, -1, -1):
         x.append(alpha[i] * x[-1] + beta[i])
     x.reverse()
-    return x
+    return np.array(x)
 
 
 def solve(num_nodes, boundary_condition):
